@@ -12,18 +12,35 @@
   <script src="./throttle.js"></script>
   <script src="./createClass.js"></script>
   <script src="./EventEmitter.js"></script>
-  <script src="./MyPromise.js"></script>
+  <!-- <script src="./MyPromise.js"></script> -->
+  <script src="./MiniPromise.js"></script>
   <script>
-    const myPromise = new MyPromise(function (resolve, reject) {
-      resolve('123')
+    // const myPromise = new MyPromise(function (resolve, reject) {
+    //   setTimeout(() => {
+    //     resolve('123')
+    //   }, 3000)
+    // })
+    // myPromise.then((res) => {
+    //   console.log(res)
+    // }).then(res => {
+    //   console.log(12321)
+    //   throw new Error('catch')
+    // }).catch(err => {
+    //   console.log(err)
+    // })
+
+    const miniPromise = new MiniPromise(function (resolve, reject) {
+      console.log(111)
+      resolve(222)
     })
-    myPromise.then((res) => {
+    miniPromise.then(res => {
       console.log(res)
     }).then(res => {
-      console.log(12321)
-      throw new Error('catch')
-    }).catch(err => {
-      console.log(err)
+      return new MiniPromise((resolve, reject) => {
+        resolve(333)
+      })
+    }).then(res => {
+      console.log(res)
     })
   </script>
 </body>
