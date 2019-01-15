@@ -113,3 +113,15 @@ function resolvePromise (promise2, x, resolve, reject) {
     resolve(x)
   }
 }
+
+
+  MiniPromise.defer = MiniPromise.deferred = function () {
+    let dfd = {}
+    dfd.promise = new MiniPromise((resolve,reject)=>{
+      dfd.resolve = resolve;
+      dfd.reject = reject;
+    });
+    return dfd;
+  }
+
+  module.exports = MiniPromise
