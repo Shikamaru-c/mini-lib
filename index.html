@@ -12,8 +12,18 @@
   <script src="./throttle.js"></script>
   <script src="./createClass.js"></script>
   <script src="./EventEmitter.js"></script>
-  <script src="./MiniPromise.js"></script>
+  <script src="./MyPromise.js"></script>
   <script>
+    new MyPromise((resolve, reject) => {
+      resolve(333)
+    }).then(res => {
+      console.log(res)
+      return new MyPromise((resolve, reject) => {
+        resolve(444)
+      })
+    }).then(res => {
+      console.log(res)
+    })
   </script>
 </body>
 </html>

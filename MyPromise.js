@@ -2,67 +2,63 @@ const PENDING = 'pending'
 const FULFILLED = 'fulfilled'
 const REJECTED = 'rejected'
 
-class MiniPromise {
+class MyPromise {
   constructor (executor) {
-    this.status = PENDING
+    this.state = PENDING
     this.value = undefined
     this.reason = undefined
-
-    this.onResolvedCallbacks = []
+    this.onFulfilledCallbacks = []
     this.onRejectedCallbacks = []
 
     const resolve = (value) => {
-      if (this.status === PENDING) {
-        this.status = FULFILLED
+      if (this.state === PENDING) {
+        this.state = FULFILLED
         this.value = value
-        
-        this.onResolvedCallbacks.forEach(fn => fn())
+        this.onFulfilledCallbacks.forEach(callback => callback())
       }
     }
     const reject = (reason) => {
-      if (this.status === PENDING) {
-        this.status = REJECTED
+      if (this.state === PENDING) {
+        this.state = PENDING
         this.reason = reason
-
-        this.onRejectedCallbacks.forEach(fn => fn())
+        this.onRejectedCallbacks.forEach(callback => callback())
       }
     }
-
     try {
       executor(resolve, reject)
-    } catch (error) {
-      reject(error)
+    } catch (e) {
+      reject(e)
     }
   }
 
   then (onFulfilled, onRejected) {
-    const promise2 = new MiniPromise((resolve, reject) => {
-      if (this.status === FULFILLED) {
+    const promise2 = new MyPromise((resolve, reject) => {
+      if (this.state === FULFILLED) {
         setTimeout(() => {
           try {
             let x = onFulfilled(this.value)
             resolvePromise(promise2, x, resolve, reject)
-          } catch (error) {
-            reject(error)
+          } catch (e) {
+            reject(e)
           }
         })
-      } else if (this.status === REJECTED) {
+      } else if (this.state === REJECTED) {
         setTimeout(() => {
           try {
             let x = onRejected(this.reason)
             resolvePromise(promise2, x, resolve, reject)
-          } catch (error) {
-            reject(error)
+          } catch (e) {
+            reject(e)
           }
         })
-      } else {
-        this.onResolvedCallbacks.push(() => {
+      } else if (this.state === PENDING) {
+        this.onFulfilledCallbacks.push(() => {
           setTimeout(() => {
             try {
               let x = onFulfilled(this.value)
               resolvePromise(promise2, x, resolve, reject)
-            } catch (error) {
-              reject(error)
+            } catch (e) {
+              reject(e)
             }
           })
         })
@@ -71,57 +67,44 @@ class MiniPromise {
             try {
               let x = onRejected(this.reason)
               resolvePromise(promise2, x, resolve, reject)
-            } catch (error) {
-              reject(error)
+            } catch (e) {
+              reject(e)
             }
           })
         })
       }
     })
-
     return promise2
   }
 }
 
 function resolvePromise (promise2, x, resolve, reject) {
-  if (x === promise2) {
-    return reject(new TypeError('Chaining cycle detected for prose'))
+  if (promise2 === x) {
+    reject(new TypeError(''))
   }
-  let called
   if (x !== null && (typeof x === 'object' || typeof x === 'function')) {
     try {
-      let then = x.then
+      const then = x.then
       if (typeof then === 'function') {
+        let called
         then.call(x, y => {
           if (called) return
           called = true
           resolvePromise(promise2, y, resolve, reject)
-        }, error => {
+        }, e => {
           if (called) return
           called = true
-          reject(error)
+          reject(e)
         })
       } else {
         resolve(x)
       }
-    } catch (error) {
+    } catch (e) {
       if (called) return
       called = true
-      reject(error)
+      reject(e)
     }
   } else {
     resolve(x)
   }
 }
-
-
-  MiniPromise.defer = MiniPromise.deferred = function () {
-    let dfd = {}
-    dfd.promise = new MiniPromise((resolve,reject)=>{
-      dfd.resolve = resolve;
-      dfd.reject = reject;
-    });
-    return dfd;
-  }
-
-  module.exports = MiniPromise
